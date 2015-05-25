@@ -1,84 +1,85 @@
 (function (root) {
-// lazy require symbols table
-var _symbols, removelist;
-function symbols(code) {
+  // lazy require symbols table
+  var _symbols, removelist;
+  var pinyin = require('pinyin');
+  function symbols(code) {
     if (_symbols) return _symbols[code];
     _symbols = require('unicode/category/So');
     removelist = ['sign','cross','of','symbol','staff','hand','black','white']
-        .map(function (word) {return new RegExp(word, 'gi')});
+      .map(function (word) {return new RegExp(word, 'gi')});
     return _symbols[code];
-}
+  }
 
-function slug(string, opts) {
-    string = string.toString();
+  function slug(string, opts) {
+    string = pinyin(string.toString(), {style:pinyin.STYLE_NORMAL});
     if ('string' === typeof opts)
-        opts = {replacement:opts};
+      opts = {replacement:opts};
     opts = opts || {};
     opts.mode = opts.mode || slug.defaults.mode;
     var defaults = slug.defaults.modes[opts.mode];
     var keys = ['replacement','multicharmap','charmap','remove','lower'];
     for (var key, i = 0, l = keys.length; i < l; i++) { key = keys[i];
-        opts[key] = (key in opts) ? opts[key] : defaults[key];
-    }
+                                                        opts[key] = (key in opts) ? opts[key] : defaults[key];
+                                                      }
     if ('undefined' === typeof opts.symbols)
-        opts.symbols = defaults.symbols;
+      opts.symbols = defaults.symbols;
 
     var lengths = [];
     for (var key in opts.multicharmap) {
-        if (!opts.multicharmap.hasOwnProperty(key))
-            continue;
+      if (!opts.multicharmap.hasOwnProperty(key))
+        continue;
 
-        var len = key.length;
-        if (lengths.indexOf(len) === -1)
-            lengths.push(len);
+      var len = key.length;
+      if (lengths.indexOf(len) === -1)
+        lengths.push(len);
     }
 
     var code, unicode, result = "";
     for (var char, i = 0, l = string.length; i < l; i++) { char = string[i];
-        if (!lengths.some(function (len) {
-            var str = string.substr(i, len);
-            if (opts.multicharmap[str]) {
-                i += len - 1;
-                char = opts.multicharmap[str];
-                return true;
-            } else return false;
-        })) {
-            if (opts.charmap[char]) {
-                char = opts.charmap[char];
-                code = char.charCodeAt(0);
-            } else {
-                code = string.charCodeAt(i);
-            }
-            if (opts.symbols && (unicode = symbols(code))) {
-                char = unicode.name.toLowerCase();
-                for(var j = 0, rl = removelist.length; j < rl; j++) {
-                    char = char.replace(removelist[j], '');
-                }
-                char = char.replace(/^\s+|\s+$/g, '');
-            }
-        }
-        char = char.replace(/[^\w\s\-\.\_~]/g, ''); // allowed
-        if (opts.remove) char = char.replace(opts.remove, ''); // add flavour
-        result += char;
-    }
+                                                           if (!lengths.some(function (len) {
+                                                             var str = string.substr(i, len);
+                                                             if (opts.multicharmap[str]) {
+                                                               i += len - 1;
+                                                               char = opts.multicharmap[str];
+                                                               return true;
+                                                             } else return false;
+                                                           })) {
+                                                             if (opts.charmap[char]) {
+                                                               char = opts.charmap[char];
+                                                               code = char.charCodeAt(0);
+                                                             } else {
+                                                               code = string.charCodeAt(i);
+                                                             }
+                                                             if (opts.symbols && (unicode = symbols(code))) {
+                                                               char = unicode.name.toLowerCase();
+                                                               for(var j = 0, rl = removelist.length; j < rl; j++) {
+                                                                 char = char.replace(removelist[j], '');
+                                                               }
+                                                               char = char.replace(/^\s+|\s+$/g, '');
+                                                             }
+                                                           }
+                                                           char = char.replace(/[^\w\s\-\.\_~]/g, ''); // allowed
+                                                           if (opts.remove) char = char.replace(opts.remove, ''); // add flavour
+                                                           result += char;
+                                                         }
     result = result.replace(/^\s+|\s+$/g, ''); // trim leading/trailing spaces
     result = result.replace(/[-\s]+/g, opts.replacement); // convert spaces
     result = result.replace(opts.replacement+"$",''); // remove trailing separator
     if (opts.lower)
       result = result.toLowerCase();
     return result;
-};
+  };
 
-slug.defaults = {
+  slug.defaults = {
     mode: 'pretty',
-};
+  };
 
-slug.multicharmap = slug.defaults.multicharmap = {
+  slug.multicharmap = slug.defaults.multicharmap = {
     '<3': 'love', '&&': 'and', '||': 'or', 'w/': 'with',
-};
+  };
 
-// https://code.djangoproject.com/browser/django/trunk/django/contrib/admin/media/js/urlify.js
-slug.charmap  = slug.defaults.charmap = {
+  // https://code.djangoproject.com/browser/django/trunk/django/contrib/admin/media/js/urlify.js
+  slug.charmap  = slug.defaults.charmap = {
     // latin
     'À': 'A', 'Á': 'A', 'Â': 'A', 'Ã': 'A', 'Ä': 'A', 'Å': 'A', 'Æ': 'AE',
     'Ç': 'C', 'È': 'E', 'É': 'E', 'Ê': 'E', 'Ë': 'E', 'Ì': 'I', 'Í': 'I',
@@ -163,50 +164,50 @@ slug.charmap  = slug.defaults.charmap = {
     '℠': 'sm', '…': '...', '˚': 'o', 'º': 'o', 'ª': 'a', '•': '*',
     '∆': 'delta', '∞': 'infinity', '♥': 'love', '&': 'and', '|': 'or',
     '<': 'less', '>': 'greater',
-};
+  };
 
-slug.defaults.modes = {
+  slug.defaults.modes = {
     rfc3986: {
-        replacement: '-',
-        symbols: true,
-        remove: null,
-        lower: true,
-        charmap: slug.defaults.charmap,
-        multicharmap: slug.defaults.multicharmap,
+      replacement: '-',
+      symbols: true,
+      remove: null,
+      lower: true,
+      charmap: slug.defaults.charmap,
+      multicharmap: slug.defaults.multicharmap,
     },
     pretty: {
-        replacement: '-',
-        symbols: true,
-        remove: /[.]/g,
-        lower: false,
-        charmap: slug.defaults.charmap,
-        multicharmap: slug.defaults.multicharmap,
+      replacement: '-',
+      symbols: true,
+      remove: /[.]/g,
+      lower: false,
+      charmap: slug.defaults.charmap,
+      multicharmap: slug.defaults.multicharmap,
     },
-};
+  };
 
-// Be compatible with different module systems
+  // Be compatible with different module systems
 
-if (typeof define !== 'undefined' && define.amd) { // AMD
+  if (typeof define !== 'undefined' && define.amd) { // AMD
     // dont load symbols table in the browser
     for (var key in slug.defaults.modes) {
-        if (!slug.defaults.modes.hasOwnProperty(key))
-            continue;
+      if (!slug.defaults.modes.hasOwnProperty(key))
+        continue;
 
-        slug.defaults.modes[key].symbols = false;
+      slug.defaults.modes[key].symbols = false;
     }
     define([], function () {return slug});
-} else if (typeof module !== 'undefined' && module.exports) { // CommonJS
+  } else if (typeof module !== 'undefined' && module.exports) { // CommonJS
     symbols(); // preload symbols table
     module.exports = slug;
-} else { // Script tag
+  } else { // Script tag
     // dont load symbols table in the browser
     for (var key in slug.defaults.modes) {
-        if (!slug.defaults.modes.hasOwnProperty(key))
-            continue;
+      if (!slug.defaults.modes.hasOwnProperty(key))
+        continue;
 
-        slug.defaults.modes[key].symbols = false;
+      slug.defaults.modes[key].symbols = false;
     }
     root.slug = slug;
-}
+  }
 
 }(this));
