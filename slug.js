@@ -11,7 +11,7 @@
   }
 
   function slug(string, opts) {
-    string = pinyin(string.toString(), {style:pinyin.STYLE_NORMAL});
+    string = pinyin(string.toString(), {style:pinyin.STYLE_NORMAL}).join(' ');
     if ('string' === typeof opts)
       opts = {replacement:opts};
     opts = opts || {};
