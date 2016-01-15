@@ -1,8 +1,8 @@
 {
   "name" : "uslug",
-  "version" : "1.0.3",
+  "version" : "1.1.0",
   "description" : "A permissive slug generator that works with unicode.",
-  "author": "Jeremy Selier <jerem.selier@gmail.com>",
+  "author": "Jeremy Selier <jerem.selier@gmail.com>, modified by Tobias Butler <tobiasab@gmail.com>",
   "dependencies": {
     "unorm": ">= 1.0.0"
   },
@@ -11,7 +11,7 @@
   },
   "repository" : {
     "type" : "git",
-    "url" : "http://github.com/jeremys/uslug.git" 
+    "url" : "http://github.com/jeremys/uslug.git"
   },
   "main": "./index",
   "engines" : {
