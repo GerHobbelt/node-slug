@@ -1,10 +1,15 @@
 {
   "name": "slug",
   "version": "0.9.1",
-  "homepage": "https://github.com/dodo/node-slug",
+  "homepage": "https://github.com/grmmph/node-slug",
   "authors": [
     "▟ ▖▟ ▖ <dodo.the.last@gmail.com>"
+    "Yonatan Wolowelsky <grmmph@gmail.com>"
   ],
+	"repository": {
+    "type": "git",
+    "url": "git@github.com:grmmph/node-slug.git"
+  },
   "description": "slugifies even utf-8 chars!",
   "main": "slug.js",
   "moduleType": [
