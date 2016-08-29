@@ -1,6 +1,7 @@
 (function (root) {
 // lazy require symbols table
 var _symbols, removelist;
+var pinyin = require('pinyin');
 function symbols(code) {
     if (_symbols) return _symbols[code];
     _symbols = require('unicode/category/So');
@@ -10,7 +11,7 @@ function symbols(code) {
 }
 
 function slug(string, opts) {
-    string = string.toString();
+    string = pinyin(string.toString(), {style:pinyin.STYLE_NORMAL}).join(' ');
     if ('string' === typeof opts)
         opts = {replacement:opts};
     opts = opts || {};
