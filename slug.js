@@ -1,13 +1,13 @@
 (function (root) {
 // lazy require symbols table
-var _symbols, removelist;
-function symbols(code) {
-    if (_symbols) return _symbols[code];
-    _symbols = require('unicode/category/So');
-    removelist = ['sign','cross','of','symbol','staff','hand','black','white']
-        .map(function (word) {return new RegExp(word, 'gi')});
-    return _symbols[code];
-}
+// var _symbols, removelist;
+// function symbols(code) {
+//     if (_symbols) return _symbols[code];
+//     _symbols = require('unicode/category/So');
+//     removelist = ['sign','cross','of','symbol','staff','hand','black','white']
+//         .map(function (word) {return new RegExp(word, 'gi')});
+//     return _symbols[code];
+// }
 
 function slug(string, opts) {
     string = string.toString();
@@ -168,7 +168,7 @@ slug.charmap  = slug.defaults.charmap = {
 slug.defaults.modes = {
     rfc3986: {
         replacement: '-',
-        symbols: true,
+        symbols: false,
         remove: null,
         lower: true,
         charmap: slug.defaults.charmap,
@@ -176,7 +176,7 @@ slug.defaults.modes = {
     },
     pretty: {
         replacement: '-',
-        symbols: true,
+        symbols: false,
         remove: /[.]/g,
         lower: false,
         charmap: slug.defaults.charmap,
@@ -196,7 +196,7 @@ if (typeof define !== 'undefined' && define.amd) { // AMD
     }
     define([], function () {return slug});
 } else if (typeof module !== 'undefined' && module.exports) { // CommonJS
-    symbols(); // preload symbols table
+    //symbols(); // preload symbols table
     module.exports = slug;
 } else { // Script tag
     // dont load symbols table in the browser

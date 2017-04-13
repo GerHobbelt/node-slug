@@ -216,7 +216,7 @@ describe 'slug', ->
         slug('ąčęėįšųūžĄČĘĖĮŠŲŪŽ').should.eql 'aceeisuuzACEEISUUZ'
 
     it 'should replace multichars', ->
-        [slug "w/ <3 && sugar || ☠"].should.eql ['with-love-and-sugar-or-skull-and-bones']
+        [slug "w/ <3 && sugar || sweets"].should.eql ['with-love-and-sugar-or-sweets']
 
     it 'should be flavourable', ->
         text = "It's your journey ... we guide you through."
