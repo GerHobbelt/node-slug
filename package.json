@@ -1,14 +1,20 @@
 {
-    "name": "slug",
+    "name": "@invintusmedia/slug",
     "description": "slugifies even utf-8 chars!",
     "version": "0.9.1",
-    "homepage": "https://github.com/dodo/node-slug",
+    "homepage": "https://github.com/TVWIT/node-slug",
     "author": "dodo (https://github.com/dodo)",
     "repository": {
         "type": "git",
-        "url": "git://github.com/dodo/node-slug.git"
+        "url": "git://github.com/TVWIT/node-slug.git"
     },
     "main": "slug.js",
+    "browser": {
+        "unicode/category/So": false
+    },
+    "bin": {
+        "slug": "bin/slug.js"
+    },
     "engines": {
         "node": ">= 0.4.x"
     },
@@ -22,6 +28,8 @@
         "url"
     ],
     "scripts": {
+        "preversion": "npm test",
+        "postversion": "git push && git push --tags && npm publish",
         "test": "./node_modules/.bin/mocha ./test/*.test.* --require should --reporter spec --colors --compilers coffee:coffee-script/register"
     },
     "dependencies": {
@@ -31,9 +39,6 @@
         "coffee-script": "~1.7.1",
         "mocha": "^5.2.0",
         "should": "~3.1.2"
-    },
-    "bin": {
-        "slug": "bin/slug.js"
     },
     "licenses": [
         {

@@ -1,4 +1,8 @@
-# [slug](https://github.com/dodo/node-slug)
+# [slug](https://github.com/TVWIT/node-slug)
+
+
+**This is forked & published as @invintusmedia/slug. The only difference is that we are exposing a browser-friendly build**
+
 
 slugifies every string, even when it contains unicode!
 
