@@ -10,7 +10,8 @@
   },
   "main": "slug.js",
   "engines": {
-    "node": ">=4"
+    "node": "8.12.0",
+    "npm": "6.4.1"
   },
   "keywords": [
     "slugify",
