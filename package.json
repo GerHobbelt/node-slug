@@ -6,7 +6,7 @@
   "author": "Zertz (https://github.com/Zertz)",
   "repository": {
     "type": "git",
-    "url": "git://github.com/Zertz/mollusc.git"
+    "url": "git+https://github.com/muzeroom/mollusc.git"
   },
   "main": "slug.js",
   "engines": {
