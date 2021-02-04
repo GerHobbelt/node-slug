@@ -7,6 +7,7 @@ var word1 = [word0, word0].join('-');
 var word2 = [word0, word0].join(' - ');
 
 var tests = [
+  ['', ''],
   ['The \u212B symbol invented by A. J. \u00C5ngstr\u00F6m (1814, L\u00F6gd\u00F6, \u2013 1874) denotes the length 10\u207B\u00B9\u2070 m.', 'the-å-symbol-invented-by-a-j-ångström-1814-lögdö-1874-denotes-the-length-1010-m'],
   ['Быстрее и лучше!', 'быстрее-и-лучше'],
   ['xx x  - "#$@ x', 'xx-x-x'],
@@ -32,6 +33,9 @@ var tests = [
   ['일본정부 법무대신(法務大臣): 우리는 일본 입관법의 재검토를 요구한다!', '일본정부-법무대신法務大臣-우리는-일본-입관법의-재검토를-요구한다'],
   // Removes character in supplementary plane (char code 77824).
   ['\uD80C\uDC00', ''],
+  ['😁', 'grin'],
+  ['😁a', 'grina'],
+  ['🐶🐶🐶🐱', 'dogdogdogcat'],
 ];
 
 for (var t in tests) {
