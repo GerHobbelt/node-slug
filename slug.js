@@ -1,33 +1,32 @@
 
 import pinyin from 'pinyin';
 import unicode_symbols from 'unicode/category/So.js';
+//import unorm from 'unorm';
+import { unemojify, uslug_mode_transform } from './lib/uslug.js';
 
 const removelist = [ 'sign', 'cross', 'of', 'symbol', 'staff', 'hand', 'black', 'white' ]
       .map(function (word) {
         return new RegExp(word, 'gi');
       });
 
+const normModes = { NFC: 'NFC', NFKC: 'NFKC', NFD: 'NFD', NFKD: 'NFKD' };
+
 function symbols(code) {
   return unicode_symbols[code];
 }
 
-function slug(string, opts) {
-  if (string === null || string === undefined) {
+function slug(content, opts) {
+  if (content === null || content === undefined) {
     throw new Error('Slug input must be castable to string');
   }
-  string = pinyin(string.toString(), { style:pinyin.STYLE_NORMAL }).join(' ');
-  if (typeof opts === 'string') {
-    opts = { replacement:opts };
-  }
-  opts = opts || {};
-  opts.mode = opts.mode || slug.defaults.mode;
-  let defaults = slug.defaults.modes[opts.mode];
-  let keys = [ 'replacement', 'multicharmap', 'charmap', 'remove', 'lower', 'allowed' ];
+  let string = content.toString();
 
-  for (let i = 0, l = keys.length; i < l; i++) {
-    let key = keys[i];
-    opts[key] = (key in opts) ? opts[key] : defaults[key];
+  if (typeof opts === 'string') {
+    opts = { replacement: opts };
   }
+  opts = Object.assign({}, opts);
+  let defaults = slug.defaults.modes[opts.mode || slug.defaults.mode];
+  opts = Object.assign({}, defaults, opts);
   if (typeof opts.symbols === 'undefined') {
     opts.symbols = defaults.symbols;
   }
@@ -44,10 +43,23 @@ function slug(string, opts) {
     }
   }
 
-  let code, unicode;
+  console.error(`RAW: '${string}'`);
+
+  //string = unorm.nfkc(string);
+  if (opts.normalize) {
+    string = string.normalize(normModes[opts.normalize] || 'NFC');
+  }
+  console.error(`nfkc: '${string}', mode:${normModes[opts.normalize]}`);
+
+  if (opts.pinyin) {
+    string = pinyin(string, { style:pinyin.STYLE_NORMAL }).join(' ');
+  }
+  console.error(`pinyin: '${string}'`);
+
   let result = '';
   for (let i = 0, l = string.length; i < l; i++) {
-    let char = string[i];
+    let char;
+
     if (!lengths.some(function (len) {
       let str = string.substr(i, len);
       if (opts.multicharmap[str]) {
@@ -57,37 +69,76 @@ function slug(string, opts) {
       }
       return false;
     })) {
-      if (opts.charmap[char]) {
-        char = opts.charmap[char];
-        code = char.charCodeAt(0);
+      let code = string.codePointAt(i);
+      console.error(`codePoint: c:'${string[i]}' code: 0x${code.toString(16)} slice:'${string.slice(i, i + 2)}'`);
+
+      if (code >= 0x10000) {
+        char = String.fromCodePoint(code);
+        i++;
       } else {
-        code = string.charCodeAt(i);
+        char = string[i];
       }
-      if (opts.symbols && (unicode = symbols(code))) {
-        char = unicode.name.toLowerCase();
-        for (let j = 0, rl = removelist.length; j < rl; j++) {
-          char = char.replace(removelist[j], '');
+
+      if (opts.transform) {
+        char = opts.transform(char) || '';
+      }
+      console.error(`transform: '${char}'`);
+
+      if (opts.charmap && opts.charmap[char]) {
+        char = opts.charmap[char];
+      }
+      console.error(`charmap: '${char}'`);
+
+      if (opts.symbols) {
+        code = char.codePointAt(0);
+
+        let unicode = symbols(code);
+        if (unicode) {
+          char = unicode.name.toLowerCase();
+          for (let j = 0, rl = removelist.length; j < rl; j++) {
+            char = char.replace(removelist[j], '');
+          }
+          char = char.trim();
         }
-        char = char.trim();
       }
+      console.error(`symbols: '${char}'`);
+
+      if (opts.unemojify) {
+        char = unemojify(char);
+      }
+      console.error(`unumojify: '${char}'`);
     }
-    char = char.replace(opts.allowed, ''); // check for not-allowed characters
-    if (opts.remove) char = char.replace(opts.remove, ''); // add flavour
+
+    if (opts.remove) {
+      char = char.replace(opts.remove, ''); // add flavour
+    }
+    console.error(`removed: '${char}'`);
+    if (opts.allowed) {
+      char = char.replace(opts.allowed, ' '); // check for not-allowed characters
+    }
+    console.error(`allowed: '${char}'`);
     result += char;
   }
+  console.error(`result before trim, etc: '${result}'`);
   result = result.trim(); // trim leading/trailing spaces
+  result = result.replace(/\s+/g, ' '); // treat any whitespace sequence as a single space
+  console.error(`result after trim: '${result}'`);
 
   if (opts.limit) {
     let split_array = result.split(' ');
     split_array.splice(opts.limit, split_array.length - opts.limit);
     result = split_array.join(' ');
   }
+  console.error(`result after limit: '${result}'`);
 
   result = result.replace(/[-\s]+/g, opts.replacement); // convert spaces
-  result = result.replace(new RegExp(opts.replacement + '$'), ''); // remove trailing separator
+  console.error(`result after replacement: '${result}'`);
+  result = result.replace(new RegExp(`(?:${opts.replacement})+$`), ''); // remove trailing separator(s)
+  console.error(`result after replacement tightening: '${result}'`);
   if (opts.lower) {
     result = result.toLowerCase();
   }
+  console.error(`result after lowercasing: '${result}'`);
   return result;
 }
 
@@ -101,7 +152,7 @@ slug.multicharmap = slug.defaults.multicharmap = {
 };
 
 
-slug.charmap  = slug.defaults.charmap = {
+const languagesCharmap = {
     // latin
   À: 'A', Á: 'A', Â: 'A', Ã: 'A', Ä: 'A', Å: 'A', Æ: 'AE',
   Ç: 'C', È: 'E', É: 'E', Ê: 'E', Ë: 'E', Ì: 'I', Í: 'I',
@@ -180,20 +231,6 @@ slug.charmap  = slug.defaults.charmap = {
   პ: 'p', ჟ: 'zh', რ: 'r', ს: 's', ტ: 't', უ: 'u', ფ: 'f',
   ქ: 'q', ღ: 'gh', ყ: 'k', შ: 'sh', ჩ: 'ch', ც: 'ts', ძ: 'dz',
   წ: 'ts', ჭ: 'ch', ხ: 'kh', ჯ: 'j', ჰ: 'h',
-    // currency
-  '€': 'euro', '₢': 'cruzeiro', '₣': 'french franc', '£': 'pound',
-  '₤': 'lira', '₥': 'mill', '₦': 'naira', '₧': 'peseta', '₨': 'rupee',
-  '₩': 'won', '₪': 'new shequel', '₫': 'dong', '₭': 'kip', '₮': 'tugrik',
-  '₯': 'drachma', '₰': 'penny', '₱': 'peso', '₲': 'guarani', '₳': 'austral',
-  '₴': 'hryvnia', '₵': 'cedi', '¢': 'cent', '¥': 'yen', 元: 'yuan',
-  円: 'yen', '﷼': 'rial', '₠': 'ecu', '¤': 'currency', '฿': 'baht',
-  $: 'dollar', '₹': 'indian rupee',
-    // symbols
-  '©':'(c)', œ: 'oe', Œ: 'OE', '∑': 'sum', '®': '(r)', '†': '+',
-  '“': '"', '”': '"', '‘': "'", '’': "'", '∂': 'd', ƒ: 'f', '™': 'tm',
-  '℠': 'sm', '…': '...', '˚': 'o', º: 'o', ª: 'a', '•': '*',
-  '∆': 'delta', '∞': 'infinity', '♥': 'love', '&': 'and', '|': 'or',
-  '<': 'less', '>': 'greater', '×': 'x',
      // arabic
   أ: 'أ', ب: 'ب', ت: 'ت', ث: 'ث', ج: 'ج', ح: 'ح', خ: 'خ',
   د: 'د', ذ: 'ذ', ر: 'ر', ز: 'ز', س: 'س', ش: 'ش', ص: 'ص',
@@ -201,6 +238,26 @@ slug.charmap  = slug.defaults.charmap = {
   ك: 'ك', ل: 'ل', م: 'م', ن: 'ن', ه: 'ه', و: 'و', ي: 'ي',
   ا: 'ا', ى: 'ى', ئ: 'ئ', إ: 'إ', ؤ: 'ؤ', ة: 'ة', آ: 'آ'
 };
+
+const miscSymbolsCharmap = {
+    // currency
+  '€': ' euro ', '₢': ' cruzeiro ', '₣': ' french franc ', '£': ' pound ',
+  '₤': ' lira ', '₥': ' mill ', '₦': ' naira ', '₧': ' peseta ', '₨': ' rupee ',
+  '₩': ' won ', '₪': ' new shequel ', '₫': ' dong ', '₭': 'kip ', '₮': ' tugrik ',
+  '₯': ' drachma ', '₰': ' penny ', '₱': ' peso ', '₲': ' guarani ', '₳': ' austral ',
+  '₴': ' hryvnia ', '₵': ' cedi ', '¢': ' cent ', '¥': ' yen ', 元: ' yuan ',
+  円: ' yen ', '﷼': ' rial ', '₠': ' ecu ', '¤': ' currency ', '฿': ' baht ',
+  $: ' dollar ', '₹': ' indian rupee ',
+    // symbols
+  '©':'(c)', œ: 'oe', Œ: 'OE', '∑': ' sum ', '®': '(r)', '†': '+',
+  '“': '"', '”': '"', '‘': "'", '’': "'", '∂': 'd', ƒ: 'f', '™': '(tm)',
+  '℠': '(sm)', '…': '...', '˚': 'o', º: 'o', ª: 'a', '•': '*',
+  '∆': 'delta', '∞': ' infinity ', '♥': ' love ', '&': ' and ', '|': ' or ',
+  '<': ' less ', '>': ' greater ', '×': 'x'
+};
+
+slug.charmap = slug.defaults.charmap = Object.assign({}, languagesCharmap, miscSymbolsCharmap);
+
 
 slug.allowed = slug.defaults.allowed = /[^\w\s\d\-._~]/g;
 // allow Hebrew, Arabic, Chinese, Japanese, Georgian, Greek and Cyrilic
@@ -210,8 +267,12 @@ slug.defaults.modes = {
   rfc3986: {
     replacement: '-',
     symbols: true,
-    remove: null,
+    unemojify: true,
+    normalize: 'NFKC',
+    remove: /['"]/g,
     lower: true,
+    pinyin: true,
+    transform: null,
     allowed: slug.defaults.allowed,
     charmap: slug.defaults.charmap,
     multicharmap: slug.defaults.multicharmap
@@ -219,10 +280,27 @@ slug.defaults.modes = {
   pretty: {
     replacement: '-',
     symbols: true,
-    remove: /[.]/g,
+    unemojify: true,
+    normalize: 'NFKC',
+    remove: /[.'"]/g,
     allowed: slug.defaults.allowed,
     lower: false,
+    pinyin: true,
+    transform: null,
     charmap: slug.defaults.charmap,
+    multicharmap: slug.defaults.multicharmap
+  },
+  uslug: {
+    replacement: '-',
+    symbols: false,
+    unemojify: true,
+    normalize: 'NFKC',
+    remove: null,
+    allowed: /[^\p{L}\p{M}\p{N}_~\-]/gu,
+    lower: false,
+    pinyin: false,
+    transform: uslug_mode_transform,
+    charmap: miscSymbolsCharmap,
     multicharmap: slug.defaults.multicharmap
   }
 };

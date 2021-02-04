@@ -40,8 +40,10 @@
     "access": "public"
   },
   "dependencies": {
+    "node-emoji": "^1.10.0",
     "pinyin": "2.9.1",
-    "unicode": ">=13.0.0"
+    "unicode": ">=13.0.0",
+    "unorm": "^1.6.0"
   },
   "devDependencies": {
     "argparse": "2.0.1",

@@ -554,7 +554,7 @@ describe('slug', () => {
       '¢': 'cent',
       '¥': 'yen',
       元: 'yuan',
-      円: 'yuan',
+      円: 'yen',
       '﷼': 'rial',
       '₠': 'ecu',
       '¤': 'currency',
@@ -697,7 +697,8 @@ describe('slug', () => {
       char = char_map[i];
       assert.deepStrictEqual(
         slug(`foo ${char} bar baz`, {
-          symbols: false
+          symbols: false,
+          unemojify: false
         })
         , 'foo-bar-baz'
       );
@@ -796,3 +797,68 @@ describe('slug', () => {
     }
   });
 });
+
+
+
+
+xdescribe('slug in uslug mode', () => {
+
+  function uslug(str, opts) {
+    return slug(str, Object.assign({}, { mode: 'uslug' }, opts));
+  }
+
+  let word0 = 'Ελληνικά';
+  let word1 = [ word0, word0 ].join('-');
+  let word2 = [ word0, word0 ].join(' - ');
+
+  let tests = [
+    [ '', '' ],
+    [ 'The \u212B symbol invented by A. J. \u00C5ngstr\u00F6m (1814, L\u00F6gd\u00F6, \u2013 1874) denotes the length 10\u207B\u00B9\u2070 m.', 'the-å-symbol-invented-by-a-j-ångström-1814-lögdö-1874-denotes-the-length-10-10-m', { lower: true } ],
+    [ 'The \u212B symbol invented by A. J. \u00C5ngstr\u00F6m (1814, L\u00F6gd\u00F6, \u2013 1874) denotes the length 10\u207B\u00B9\u2070 m.', 'The-Å-symbol-invented-by-A-J-Ångström-1814-Lögdö-1874-denotes-the-length-10-¹⁰-m', { normalize: 'NFC' } ],
+    [ 'Быстрее и лучше!', 'быстрее-и-лучше', { lower: true } ],
+    [ 'xx x  - "#$@ x', 'xx-x-dollar-x' ],
+    [ 'Bän...g (bang)', 'bäng-bang', { lower: true, remove: /[.'"]/g } ],
+    [ 'Bän...g (bang)', 'Bän-g-bang' ],
+    [ 'Bän…g (bang)!', 'Bän-g-bang' ],
+    [ word0, word0.toLowerCase(), { lower: true } ],
+    [ word1, word1.toLowerCase(), { lower: true } ],
+    [ word2, word1.toLowerCase(), { lower: true } ],
+    [ '    a ', 'a' ],
+    [ 'tags/', 'tags' ],
+    [ 'y_u_no', 'y_u_no' ],
+    [ 'el-ni\xf1o', 'el-ni\xf1o' ],
+    [ 'x荿', 'x荿' ],
+    [ 'ϧ΃蒬蓣', 'ϧ-蒬蓣', { normalize: 'NFC' } ],
+    [ '¿x', 'x' ],
+    [ '汉语/漢語', '汉语-漢語' ],
+    [ 'فار,سي', 'فار-سي' ],
+    [ 'เแโ|ใไ', 'เแโ-ใไ', { charmap: null } ],
+    [ 'เแโ|ใไ', 'เแโ-or-ใไ' ],
+    [ '日本語ドキュメンテ(ーション)', '日本語ドキュメンテ-ーション' ],
+    [ '一二三四五六七八九十！。。。', '一二三四五六七八九十' ],
+    [ 'संसद में काम नहीं तो वेतन क्यों?', 'संसद-में-काम-नहीं-तो-वेतन-क्यों' ],
+    [ 'เร่งรัด \'ปรับเงินเดือนท้องถิ่น 1 ขั้น\' ตามมติ ครม.', 'เร่งรัด-ปรับเงินเดือนท้องถิ่น-1-ขั้น-ตามมติ-ครม' ],
+    [ 'オバマ大統領が病院爆撃の調査へ同意するように、協力してください！', 'オバマ大統領が病院爆撃の調査へ同意するように-協力してください' ],
+    [ '일본정부 법무대신(法務大臣): 우리는 일본 입관법의 재검토를 요구한다!', '일본정부-법무대신-法務大臣-우리는-일본-입관법의-재검토를-요구한다' ],
+    // Keeps character in supplementary plane (char code 77824).
+    [ '\uD80C\uDC00', '\uD80C\uDC00' ],
+    // Removes non-letter/digit/emo character in supplementary plane (char code 77824).
+    [ '\uD80C\uDC00', '\uD80C\uDC00' ],
+    [ '😁', 'grin' ],
+    [ '😁a', 'grin-a' ],
+    [ '🐶🐶🐶🐱', 'dog-dog-dog-cat' ],
+    [ 'qbc,fe', 'qbc-fe' ],
+    // Supplementary plane special purpose chars
+    [ '𝄠𝄡𝄢𝄣𝄤𝄥𝄦 𝆔𝆕𝆖', '' ]
+  ];
+
+  for (let t in tests) {
+    let test = tests[t];
+    it(`should pass '${test[0]}' as '${test[1]}' (test #${t + 1})`, () => {
+      assert.deepStrictEqual(
+        uslug(test[0], test[2]), test[1]
+      );
+    });
+  }
+});
+
