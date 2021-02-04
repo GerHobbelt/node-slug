@@ -1,47 +1,61 @@
 
-  // lazy require symbols table
-let _symbols, removelist;
-let pinyin = require('pinyin');
+import pinyin from 'pinyin';
+import unicode_symbols from 'unicode/category/So.js';
+
+const removelist = [ 'sign', 'cross', 'of', 'symbol', 'staff', 'hand', 'black', 'white' ]
+      .map(function (word) {
+        return new RegExp(word, 'gi');
+      });
+
 function symbols(code) {
-  if (_symbols) return _symbols[code];
-  _symbols = require('unicode/category/So');
-  removelist = [ 'sign', 'cross', 'of', 'symbol', 'staff', 'hand', 'black', 'white' ]
-      .map(function (word) { return new RegExp(word, 'gi'); });
-  return _symbols[code];
+  return unicode_symbols[code];
 }
 
 function slug(string, opts) {
-  if (string === null || string === undefined) { throw new Error('Slug input must be castable to string'); }
+  if (string === null || string === undefined) {
+    throw new Error('Slug input must be castable to string');
+  }
   string = pinyin(string.toString(), { style:pinyin.STYLE_NORMAL }).join(' ');
-  if (typeof opts === 'string') { opts = { replacement:opts }; }
+  if (typeof opts === 'string') {
+    opts = { replacement:opts };
+  }
   opts = opts || {};
   opts.mode = opts.mode || slug.defaults.mode;
   let defaults = slug.defaults.modes[opts.mode];
   let keys = [ 'replacement', 'multicharmap', 'charmap', 'remove', 'lower', 'allowed' ];
-  for (var key, i = 0, l = keys.length; i < l; i++) {
-    key = keys[i];
+
+  for (let i = 0, l = keys.length; i < l; i++) {
+    let key = keys[i];
     opts[key] = (key in opts) ? opts[key] : defaults[key];
   }
-  if (typeof opts.symbols === 'undefined') { opts.symbols = defaults.symbols; }
-
-  let lengths = [];
-  for (var key in opts.multicharmap) {
-    if (!opts.multicharmap.hasOwnProperty(key)) { continue; }
-
-    let len = key.length;
-    if (lengths.indexOf(len) === -1) { lengths.push(len); }
+  if (typeof opts.symbols === 'undefined') {
+    opts.symbols = defaults.symbols;
   }
 
-  let code, unicode, result = '';
-  for (var char, i = 0, l = string.length; i < l; i++) {
-    char = string[i];
+  let lengths = [];
+  for (let key in opts.multicharmap) {
+    if (!opts.multicharmap.hasOwnProperty(key)) {
+      continue;
+    }
+
+    let len = key.length;
+    if (lengths.indexOf(len) === -1) {
+      lengths.push(len);
+    }
+  }
+
+  let code, unicode;
+  let result = '';
+  for (let i = 0, l = string.length; i < l; i++) {
+    let char = string[i];
     if (!lengths.some(function (len) {
       let str = string.substr(i, len);
       if (opts.multicharmap[str]) {
         i += len - 1;
         char = opts.multicharmap[str];
         return true;
-      } return false;
+      }
+      return false;
     })) {
       if (opts.charmap[char]) {
         char = opts.charmap[char];
@@ -71,7 +85,9 @@ function slug(string, opts) {
 
   result = result.replace(/[-\s]+/g, opts.replacement); // convert spaces
   result = result.replace(new RegExp(opts.replacement + '$'), ''); // remove trailing separator
-  if (opts.lower) { result = result.toLowerCase(); }
+  if (opts.lower) {
+    result = result.toLowerCase();
+  }
   return result;
 }
 
@@ -79,11 +95,12 @@ slug.defaults = {
   mode: 'pretty'
 };
 
+// https://code.djangoproject.com/browser/django/trunk/django/contrib/admin/media/js/urlify.js
 slug.multicharmap = slug.defaults.multicharmap = {
   '<3': 'love', '&&': 'and', '||': 'or', 'w/': 'with'
 };
 
-  // https://code.djangoproject.com/browser/django/trunk/django/contrib/admin/media/js/urlify.js
+
 slug.charmap  = slug.defaults.charmap = {
     // latin
   À: 'A', Á: 'A', Â: 'A', Ã: 'A', Ä: 'A', Å: 'A', Æ: 'AE',
@@ -177,13 +194,6 @@ slug.charmap  = slug.defaults.charmap = {
   '℠': 'sm', '…': '...', '˚': 'o', º: 'o', ª: 'a', '•': '*',
   '∆': 'delta', '∞': 'infinity', '♥': 'love', '&': 'and', '|': 'or',
   '<': 'less', '>': 'greater', '×': 'x',
-       // georgian
-  ა: 'a', ბ: 'b', გ: 'g', დ: 'd', ე: 'e', ვ: 'v', ზ: 'z',
-  თ: 't', ი: 'i', კ: 'k', ლ: 'l', მ: 'm', ნ: 'n', ო: 'o',
-  პ: 'p', ჟ: 'zh', რ: 'r', ს: 's', ტ: 't', უ: 'u', ფ: 'f',
-  ქ: 'q', ღ: 'gh', ყ: 'k', შ: 'sh', ჩ: 'ch', ც: 'ts', ძ: 'dz',
-  წ: 'ts', ჭ: 'ch', ხ: 'kh', ჯ: 'j', ჰ: 'h',
-
      // arabic
   أ: 'أ', ب: 'ب', ت: 'ت', ث: 'ث', ج: 'ج', ح: 'ح', خ: 'خ',
   د: 'د', ذ: 'ذ', ر: 'ر', ز: 'ز', س: 'س', ش: 'ش', ص: 'ص',
@@ -192,9 +202,9 @@ slug.charmap  = slug.defaults.charmap = {
   ا: 'ا', ى: 'ى', ئ: 'ئ', إ: 'إ', ؤ: 'ؤ', ة: 'ة', آ: 'آ'
 };
 
-//slug.allowed = slug.defaults.allowed = /[^\w\s\-._~\/]/g;
+slug.allowed = slug.defaults.allowed = /[^\w\s\d\-._~]/g;
 // allow Hebrew, Arabic, Chinese, Japanese, Georgian, Greek and Cyrilic
-slug.allowed = slug.defaults.allowed = /[^\w\s\-._~\/\d\u0590-\u05FF\u10A0-\u10FF\u0370-\u03FF\u0600-\u06FF\u0400-\u04FF\u4E00-\u9FCC\u3000-\u303F|\u3040-\u309F|\u30A0-\u30FF|\uFF00-\uFFEF|\u4E00-\u9FAF|\u2605-\u2606|\u2190-\u2195|\u203B]/g;
+//slug.allowed = slug.defaults.allowed = /[^\w\s\\d-._~\u0590-\u05FF\u10A0-\u10FF\u0370-\u03FF\u0600-\u06FF\u0400-\u04FF\u4E00-\u9FCC\u3000-\u303F|\u3040-\u309F|\u30A0-\u30FF|\uFF00-\uFFEF|\u4E00-\u9FAF|\u2605-\u2606|\u2190-\u2195|\u203B]/g;
 
 slug.defaults.modes = {
   rfc3986: {

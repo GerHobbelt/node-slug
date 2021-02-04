@@ -6,62 +6,56 @@ import slug from '../slug.js';
 
 describe('slug', () => {
   it('should convert input to string', () => {
-    [ slug(1) ].should.eql([ '1' ]);
-    return [ slug(567890) ].should.eql([ '567890' ]);
+    assert.deepStrictEqual(slug(1), '1');
+    assert.deepStrictEqual(slug(567890),  '567890');
   });
   it('should replace whitespaces with replacement', () => {
-    [ slug('foo bar baz') ].should.eql([ 'foo-bar-baz' ]);
-    [ slug('foo bar baz', '_') ].should.eql([ 'foo_bar_baz' ]);
-    return [ slug('foo bar baz', '') ].should.eql([ 'foobarbaz' ]);
+    assert.deepStrictEqual(slug('foo bar baz'), 'foo-bar-baz');
+    assert.deepStrictEqual(slug('foo bar baz', '_'), 'foo_bar_baz');
+    assert.deepStrictEqual(slug('foo bar baz', ''), 'foobarbaz');
   });
-  it('should remove trailing space if any', () =>
-    [ slug(' foo bar baz ') ].should.eql([ 'foo-bar-baz' ]));
-  it('should remove trailing separator if any', () =>
-    [ slug(' foo bar baz-') ].should.eql([ 'foo-bar-baz' ]));
+  it('should remove trailing space if any', () => {
+    assert.deepStrictEqual(slug(' foo bar baz '), 'foo-bar-baz');
+  });
+  it('should remove trailing separator if any', () => {
+    assert.deepStrictEqual(slug(' foo bar baz-'), 'foo-bar-baz');
+  });
   it('should remove not allowed chars', () => {
-    [ slug('foo, bar baz') ].should.eql([ 'foo-bar-baz' ]);
-    [ slug('foo- bar baz') ].should.eql([ 'foo-bar-baz' ]);
-    return [ slug('foo] bar baz') ].should.eql([ 'foo-bar-baz' ]);
+    assert.deepStrictEqual(slug('foo, bar baz'), 'foo-bar-baz');
+    assert.deepStrictEqual(slug('foo- bar baz'), 'foo-bar-baz');
+    assert.deepStrictEqual(slug('foo] bar baz'), 'foo-bar-baz');
   });
   it('should leave allowed chars in rfc3986 mode', () => {
     let a;
     let allowed;
     let i;
     let len;
-    let results;
     allowed = [ '.', '_', '~' ];
-    results = [];
     for (i = 0, len = allowed.length; i < len; i++) {
       a = allowed[i];
-      results.push(
-        [
-          slug(`foo ${a} bar baz`, {
-            mode: 'rfc3986'
-          })
-        ].should.eql([ `foo-${a}-bar-baz` ])
+      assert.deepStrictEqual(
+        slug(`foo ${a} bar baz`, {
+          mode: 'rfc3986'
+        })
+        , `foo-${a}-bar-baz`
       );
     }
-    return results;
   });
   it('should leave allowed chars in pretty mode', () => {
     let a;
     let allowed;
     let i;
     let len;
-    let results;
     allowed = [ '_', '~' ];
-    results = [];
     for (i = 0, len = allowed.length; i < len; i++) {
       a = allowed[i];
-      results.push([ slug(`foo ${a} bar baz`) ].should.eql([ `foo-${a}-bar-baz` ]));
+      assert.deepStrictEqual(slug(`foo ${a} bar baz`), `foo-${a}-bar-baz`);
     }
-    return results;
   });
   it('should replace latin chars', () => {
     let char;
     let char_map;
     let replacement;
-    let results;
     char_map = {
       À: 'A',
       Á: 'A',
@@ -131,18 +125,15 @@ describe('slug', () => {
       ÿ: 'y',
       ẞ: 'SS'
     };
-    results = [];
     for (char in char_map) {
       replacement = char_map[char];
-      results.push([ slug(`foo ${char} bar baz`) ].should.eql([ `foo-${replacement}-bar-baz` ]));
+      assert.deepStrictEqual(slug(`foo ${char} bar baz`), `foo-${replacement}-bar-baz`);
     }
-    return results;
   });
   it('should replace greek chars', () => {
     let char;
     let char_map;
     let replacement;
-    let results;
     char_map = {
       α: 'a',
       β: 'b',
@@ -214,18 +205,15 @@ describe('slug', () => {
       Ϊ: 'I',
       Ϋ: 'Y'
     };
-    results = [];
     for (char in char_map) {
       replacement = char_map[char];
-      results.push([ slug(`foo ${char} bar baz`) ].should.eql([ `foo-${replacement}-bar-baz` ]));
+      assert.deepStrictEqual(slug(`foo ${char} bar baz`), `foo-${replacement}-bar-baz`);
     }
-    return results;
   });
   it('should replace turkish chars', () => {
     let char;
     let char_map;
     let replacement;
-    let results;
     char_map = {
       ş: 's',
       Ş: 'S',
@@ -240,19 +228,16 @@ describe('slug', () => {
       ğ: 'g',
       Ğ: 'G'
     };
-    results = [];
     for (char in char_map) {
       replacement = char_map[char];
-      results.push([ slug(`foo ${char} bar baz`) ].should.eql([ `foo-${replacement}-bar-baz` ]));
+      assert.deepStrictEqual(slug(`foo ${char} bar baz`), `foo-${replacement}-bar-baz`);
     }
-    return results;
   });
   it('should replace cyrillic chars', () => {
     let char;
     let char_map;
     let expected;
     let replacement;
-    let results;
     char_map = {
       а: 'a',
       б: 'b',
@@ -329,22 +314,19 @@ describe('slug', () => {
       ї: 'yi',
       ґ: 'g'
     };
-    results = [];
     for (char in char_map) {
       replacement = char_map[char];
       expected = `foo-${replacement}-bar-baz`;
       if (!replacement) {
         expected = 'foo-bar-baz';
       }
-      results.push([ slug(`foo ${char} bar baz`) ].should.eql([ expected ]));
+      assert.deepStrictEqual(slug(`foo ${char} bar baz`), expected);
     }
-    return results;
   });
   it('should replace czech chars', () => {
     let char;
     let char_map;
     let replacement;
-    let results;
     char_map = {
       č: 'c',
       ď: 'd',
@@ -365,18 +347,15 @@ describe('slug', () => {
       Ů: 'U',
       Ž: 'Z'
     };
-    results = [];
     for (char in char_map) {
       replacement = char_map[char];
-      results.push([ slug(`foo ${char} bar baz`) ].should.eql([ `foo-${replacement}-bar-baz` ]));
+      assert.deepStrictEqual(slug(`foo ${char} bar baz`), `foo-${replacement}-bar-baz`);
     }
-    return results;
   });
   it('should replace polish chars', () => {
     let char;
     let char_map;
     let replacement;
-    let results;
     char_map = {
       ą: 'a',
       ć: 'c',
@@ -396,18 +375,15 @@ describe('slug', () => {
       Ź: 'Z',
       Ż: 'Z'
     };
-    results = [];
     for (char in char_map) {
       replacement = char_map[char];
-      results.push([ slug(`foo ${char} bar baz`) ].should.eql([ `foo-${replacement}-bar-baz` ]));
+      assert.deepStrictEqual(slug(`foo ${char} bar baz`), `foo-${replacement}-bar-baz`);
     }
-    return results;
   });
   it('should replace latvian chars', () => {
     let char;
     let char_map;
     let replacement;
-    let results;
     char_map = {
       ā: 'a',
       č: 'c',
@@ -432,18 +408,15 @@ describe('slug', () => {
       Ū: 'U',
       Ž: 'Z'
     };
-    results = [];
     for (char in char_map) {
       replacement = char_map[char];
-      results.push([ slug(`foo ${char} bar baz`) ].should.eql([ `foo-${replacement}-bar-baz` ]));
+      assert.deepStrictEqual(slug(`foo ${char} bar baz`), `foo-${replacement}-bar-baz`);
     }
-    return results;
   });
   it('should replace vietnamese chars', () => {
     let char;
     let char_map;
     let replacement;
-    let results;
     char_map = {
       Ạ: 'A',
       Ả: 'A',
@@ -546,18 +519,15 @@ describe('slug', () => {
       ỹ: 'y',
       đ: 'd'
     };
-    results = [];
     for (char in char_map) {
       replacement = char_map[char];
-      results.push([ slug(`foo ${char} bar baz`) ].should.eql([ `foo-${replacement}-bar-baz` ]));
+      assert.deepStrictEqual(slug(`foo ${char} bar baz`), `foo-${replacement}-bar-baz`);
     }
-    return results;
   });
   it('should replace currencies', () => {
     let char;
     let char_map;
     let replacement;
-    let results;
     char_map = {
       '€': 'euro',
       '₢': 'cruzeiro',
@@ -584,26 +554,23 @@ describe('slug', () => {
       '¢': 'cent',
       '¥': 'yen',
       元: 'yuan',
-      円: 'yen',
+      円: 'yuan',
       '﷼': 'rial',
       '₠': 'ecu',
       '¤': 'currency',
       '฿': 'baht',
       $: 'dollar'
     };
-    results = [];
     for (char in char_map) {
       replacement = char_map[char];
       replacement = replacement.replace(' ', '-');
-      results.push([ slug(`foo ${char} bar baz`) ].should.eql([ `foo-${replacement}-bar-baz` ]));
+      assert.deepStrictEqual(slug(`foo ${char} bar baz`), `foo-${replacement}-bar-baz`, `testing char '${char}`);
     }
-    return results;
   });
   it('should replace symbols in rfc3986 mode', () => {
     let char;
     let char_map;
     let replacement;
-    let results;
     char_map = {
       '©': 'c',
       œ: 'oe',
@@ -626,24 +593,20 @@ describe('slug', () => {
       '<': 'less',
       '>': 'greater'
     };
-    results = [];
     for (char in char_map) {
       replacement = char_map[char];
-      results.push(
-        [
-          slug(`foo ${char} bar baz`, {
-            mode: 'rfc3986'
-          })
-        ].should.eql([ `foo-${replacement}-bar-baz`.toLowerCase() ])
+      assert.deepStrictEqual(
+        slug(`foo ${char} bar baz`, {
+          mode: 'rfc3986'
+        })
+        , `foo-${replacement}-bar-baz`.toLowerCase()
       );
     }
-    return results;
   });
   it('should replace symbols in pretty mode', () => {
     let char;
     let char_map;
     let replacement;
-    let results;
     char_map = {
       '©': 'c',
       œ: 'oe',
@@ -665,49 +628,41 @@ describe('slug', () => {
       '<': 'less',
       '>': 'greater'
     };
-    results = [];
     for (char in char_map) {
       replacement = char_map[char];
-      results.push([ slug(`foo ${char} bar baz`) ].should.eql([ `foo-${replacement}-bar-baz` ]));
+      assert.deepStrictEqual(slug(`foo ${char} bar baz`), `foo-${replacement}-bar-baz`);
     }
-    return results;
   });
   it('should remove ellipsis in pretty mode', () => {
     let char;
     let char_map;
     let replacement;
-    let results;
     char_map = {
       '…': '...'
     };
-    results = [];
     for (char in char_map) {
       replacement = char_map[char];
-      results.push([ slug(`foo ${char} bar baz`) ].should.eql([ 'foo-bar-baz' ]));
+      assert.deepStrictEqual(slug(`foo ${char} bar baz`), 'foo-bar-baz');
     }
-    return results;
   });
-  it('should strip … symbols in pretty mode', () =>
-    [ slug('foo … bar baz') ].should.eql([ 'foo-bar-baz' ]));
+  it('should strip … symbols in pretty mode', () => {
+    assert.deepStrictEqual(slug('foo … bar baz'), 'foo-bar-baz');
+  });
   it('should strip symbols', () => {
     let char;
     let char_map;
     let i;
     let len;
-    let results;
     char_map = [ '†', '“', '”', '‘', '’', '•' ];
-    results = [];
     for (i = 0, len = char_map.length; i < len; i++) {
       char = char_map[i];
-      results.push([ slug(`foo ${char} bar baz`) ].should.eql([ 'foo-bar-baz' ]));
+      assert.deepStrictEqual(slug(`foo ${char} bar baz`), 'foo-bar-baz');
     }
-    return results;
   });
   it('should replace unicode', () => {
     let char;
     let char_map;
     let replacement;
-    let results;
     char_map = {
       '☢': 'radioactive',
       '☠': 'skull-and-bones',
@@ -727,32 +682,26 @@ describe('slug', () => {
       '✉': 'envelope',
       '✊': 'raised-fist'
     };
-    results = [];
     for (char in char_map) {
       replacement = char_map[char];
-      results.push([ slug(`foo ${char} bar baz`) ].should.eql([ `foo-${replacement}-bar-baz` ]));
+      assert.deepStrictEqual(slug(`foo ${char} bar baz`), `foo-${replacement}-bar-baz`);
     }
-    return results;
   });
   it('should replace no unicode when disabled', () => {
     let char;
     let char_map;
     let i;
     let len;
-    let results;
     char_map = '😹☢☠☤☣☭☯☮☏☔☎☀★☂☃✈✉✊'.split('');
-    results = [];
     for (i = 0, len = char_map.length; i < len; i++) {
       char = char_map[i];
-      results.push(
-        [
-          slug(`foo ${char} bar baz`, {
-            symbols: false
-          })
-        ].should.eql([ 'foo-bar-baz' ])
+      assert.deepStrictEqual(
+        slug(`foo ${char} bar baz`, {
+          symbols: false
+        })
+        , 'foo-bar-baz'
       );
     }
-    return results;
   });
   it('should allow altering the charmap', () => {
     let charmap;
@@ -764,66 +713,67 @@ describe('slug', () => {
       r: '2',
       z: '5'
     };
-    return [
+    assert.deepStrictEqual(
       slug('foo bar baz', {
         charmap
       }).toUpperCase()
-    ].should.eql([ 'PH00-842-845' ]);
+      , 'PH00-842-845');
   });
-  it('should replace lithuanian characters', () =>
-    slug('ąčęėįšųūžĄČĘĖĮŠŲŪŽ').should.eql('aceeisuuzACEEISUUZ'));
-  it('should replace multichars', () =>
-    [ slug('w/ <3 && sugar || ☠') ].should.eql([ 'with-love-and-sugar-or-skull-and-bones' ]));
+  it('should replace lithuanian characters', () => {
+    assert.deepStrictEqual(slug('ąčęėįšųūžĄČĘĖĮŠŲŪŽ'), 'aceeisuuzACEEISUUZ');
+  });
+  it('should replace multichars', () => {
+    assert.deepStrictEqual(slug('w/ <3 && sugar || ☠'), 'with-love-and-sugar-or-skull-and-bones');
+  });
   it('should be flavourable', () => {
     let expected;
     let text;
     text = "It's your journey ... we guide you through.";
     expected = 'Its-your-journey-we-guide-you-through';
-    return [
+    assert.deepStrictEqual(
       slug(text, {
         mode: 'pretty'
       })
-    ].should.eql([ expected ]);
+      , expected);
   });
   it('should default to lowercase in rfc3986 mode', () => {
     let expected;
     let text;
     text = "It's Your Journey We Guide You Through.";
     expected = 'its-your-journey-we-guide-you-through.';
-    return [
+    assert.deepStrictEqual(
       slug(text, {
         mode: 'rfc3986'
       })
-    ].should.eql([ expected ]);
+      , expected);
   });
   it('should allow disabling of lowercase', () => {
     let expected;
     let text;
     text = "It's Your Journey We Guide You Through.";
     expected = 'Its-Your-Journey-We-Guide-You-Through.';
-    return [
+    assert.deepStrictEqual(
       slug(text, {
         mode: 'rfc3986',
         lower: false
       })
-    ].should.eql([ expected ]);
+      , expected);
   });
   it('should allow to limit slug words (5, i.e.)', () => {
     let expected;
     let text;
     text = "It's Your Journey We Guide You Through.";
     expected = 'Its-Your-Journey-We-Guide';
-    return [
+    assert.deepStrictEqual(
       slug(text, {
         limit: 5
       })
-    ].should.eql([ expected ]);
+      , expected);
   });
   return it('should allow Å, Ä, Ö, å, ä, ö', () => {
     let char;
     let char_map;
     let replacement;
-    let results;
     let text;
     char_map = {
       Ä: 'Ä',
@@ -833,19 +783,16 @@ describe('slug', () => {
       å: 'å',
       ö: 'ö'
     };
-    results = [];
     for (char in char_map) {
       replacement = char_map[char];
       text = `foo ${char} bar baz`;
-      results.push(
-        [
-          slug(text, {
-            charmap: char_map,
-            allowed: /[^\wÅÄÖåäö\s\-\.\_~]/g
-          })
-        ].should.eql([ `foo-${replacement}-bar-baz` ])
+      assert.deepStrictEqual(
+        slug(text, {
+          charmap: char_map,
+          allowed: /[^\wÅÄÖåäö\s\-\.\_~]/g
+        })
+        , `foo-${replacement}-bar-baz`
       );
     }
-    return results;
   });
 });

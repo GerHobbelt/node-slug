@@ -1,6 +1,6 @@
 {
   "name": "@gerhobbelt/slug",
-  "version": "0.9.2",
+  "version": "1.0.1-1",
   "description": "slugifies even utf-8 chars!",
   "keywords": [
     "slugify",
@@ -44,11 +44,9 @@
     "unicode": ">=13.0.0"
   },
   "devDependencies": {
-    "@gerhobbelt/prepend-header": "1.1.0-7",
     "argparse": "2.0.1",
     "cross-env": "7.0.3",
     "eslint": "7.19.0",
-    "microbundle": "0.13.0",
     "mocha": "8.2.1",
     "nyc": "15.1.0"
   },

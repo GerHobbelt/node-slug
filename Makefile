@@ -4,7 +4,6 @@ NPM_PACKAGE := $(shell node support/getGlobalName.js package)
 NPM_VERSION := $(shell node support/getGlobalName.js version)
 
 GLOBAL_NAME := $(shell node support/getGlobalName.js global)
-BUNDLE_NAME := $(shell node support/getGlobalName.js microbundle)
 
 TMP_PATH    := /tmp/${NPM_PACKAGE}-$(shell date +%s)
 
@@ -15,21 +14,13 @@ CURR_HEAD   := $(firstword $(shell git show-ref --hash HEAD | cut -b -6) master)
 GITHUB_PROJ := https://github.com//GerHobbelt/${NPM_PACKAGE}
 
 
-build: lintfix bundle test coverage todo 
+build: lintfix test coverage todo 
 
 lint:
 	eslint .
 
 lintfix:
 	eslint --fix .
-
-bundle:
-	-rm -rf ./dist
-	mkdir dist
-	microbundle --no-compress --target node --strict --name ${GLOBAL_NAME} -f modern
-	mv dist/${GLOBAL_NAME}.modern.js dist/${GLOBAL_NAME}.js
-	mv dist/${GLOBAL_NAME}.modern.js.map dist/${GLOBAL_NAME}.js.map
-	npx prepend-header 'dist/*js' support/header.js
 
 test:
 	mocha
@@ -85,8 +76,8 @@ prep-ci: clean
 	-npm audit fix
 
 report-config:
-	-echo "NPM_PACKAGE=${NPM_PACKAGE} NPM_VERSION=${NPM_VERSION} GLOBAL_NAME=${GLOBAL_NAME} BUNDLE_NAME=${BUNDLE_NAME} TMP_PATH=${TMP_PATH} REMOTE_NAME=${REMOTE_NAME} REMOTE_REPO=${REMOTE_REPO} CURR_HEAD=${CURR_HEAD}"
+	-echo "NPM_PACKAGE=${NPM_PACKAGE} NPM_VERSION=${NPM_VERSION} GLOBAL_NAME=${GLOBAL_NAME} TMP_PATH=${TMP_PATH} REMOTE_NAME=${REMOTE_NAME} REMOTE_REPO=${REMOTE_REPO} CURR_HEAD=${CURR_HEAD}"
 
 
-.PHONY: clean superclean prep prep-ci report-config publish lint lintfix test todo coverage report-coverage doc build gh-doc bundle
+.PHONY: clean superclean prep prep-ci report-config publish lint lintfix test todo coverage report-coverage doc build gh-doc 
 .SILENT: help lint test todo
