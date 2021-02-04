@@ -43,18 +43,14 @@ function slug(content, opts) {
     }
   }
 
-  console.error(`RAW: '${string}'`);
-
   //string = unorm.nfkc(string);
   if (opts.normalize) {
     string = string.normalize(normModes[opts.normalize] || 'NFC');
   }
-  console.error(`nfkc: '${string}', mode:${normModes[opts.normalize]}`);
 
   if (opts.pinyin) {
     string = pinyin(string, { style:pinyin.STYLE_NORMAL }).join(' ');
   }
-  console.error(`pinyin: '${string}'`);
 
   let result = '';
   for (let i = 0, l = string.length; i < l; i++) {
@@ -70,7 +66,6 @@ function slug(content, opts) {
       return false;
     })) {
       let code = string.codePointAt(i);
-      console.error(`codePoint: c:'${string[i]}' code: 0x${code.toString(16)} slice:'${string.slice(i, i + 2)}'`);
 
       if (code >= 0x10000) {
         char = String.fromCodePoint(code);
@@ -82,12 +77,10 @@ function slug(content, opts) {
       if (opts.transform) {
         char = opts.transform(char) || '';
       }
-      console.error(`transform: '${char}'`);
 
       if (opts.charmap && opts.charmap[char]) {
         char = opts.charmap[char];
       }
-      console.error(`charmap: '${char}'`);
 
       if (opts.symbols) {
         code = char.codePointAt(0);
@@ -101,44 +94,34 @@ function slug(content, opts) {
           char = char.trim();
         }
       }
-      console.error(`symbols: '${char}'`);
 
       if (opts.unemojify) {
         char = unemojify(char);
       }
-      console.error(`unumojify: '${char}'`);
     }
 
     if (opts.remove) {
       char = char.replace(opts.remove, ''); // add flavour
     }
-    console.error(`removed: '${char}'`);
     if (opts.allowed) {
       char = char.replace(opts.allowed, ' '); // check for not-allowed characters
     }
-    console.error(`allowed: '${char}'`);
     result += char;
   }
-  console.error(`result before trim, etc: '${result}'`);
   result = result.trim(); // trim leading/trailing spaces
   result = result.replace(/\s+/g, ' '); // treat any whitespace sequence as a single space
-  console.error(`result after trim: '${result}'`);
 
   if (opts.limit) {
     let split_array = result.split(' ');
     split_array.splice(opts.limit, split_array.length - opts.limit);
     result = split_array.join(' ');
   }
-  console.error(`result after limit: '${result}'`);
 
   result = result.replace(/[-\s]+/g, opts.replacement); // convert spaces
-  console.error(`result after replacement: '${result}'`);
   result = result.replace(new RegExp(`(?:${opts.replacement})+$`), ''); // remove trailing separator(s)
-  console.error(`result after replacement tightening: '${result}'`);
   if (opts.lower) {
     result = result.toLowerCase();
   }
-  console.error(`result after lowercasing: '${result}'`);
   return result;
 }
 
