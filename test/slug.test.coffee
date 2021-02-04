@@ -241,3 +241,11 @@ describe 'slug', ->
       expected = "Its-Your-Journey-We-Guide"
       [slug text, limit:5].should.eql [expected]
 
+    it 'should allow Å, Ä, Ö, å, ä, ö', ->
+        char_map = {
+            'Ä': 'Ä', 'Å': 'Å', 'Ö': 'O',
+            'ä': 'ä', 'å': 'å', 'ö': 'ö'
+        }
+        for char, replacement of char_map
+            text = "foo #{char} bar baz"
+            [slug text, charmap: char_map, allowed:/[^\wÅÄÖåäö\s\-\.\_~]/g].should.eql ["foo-#{replacement}-bar-baz"]

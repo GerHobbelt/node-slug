@@ -19,7 +19,7 @@
     opts = opts || {};
     opts.mode = opts.mode || slug.defaults.mode;
     var defaults = slug.defaults.modes[opts.mode];
-    var keys = ['replacement','multicharmap','charmap','remove','lower'];
+    var keys = ['replacement','multicharmap','charmap','remove','lower', 'allowed'];
     for (var key, i = 0, l = keys.length; i < l; i++) { key = keys[i];
                                                         opts[key] = (key in opts) ? opts[key] : defaults[key];
                                                       }
@@ -60,7 +60,7 @@
                 char = char.trim();
                                                              }
                                                            }
-        char = char.replace(/[^\w\s\-._~\/]/g, ''); // check for not-allowed characters
+        char = char.replace(opts.allowed, ''); // check for not-allowed characters
                                                            if (opts.remove) char = char.replace(opts.remove, ''); // add flavour
                                                            result += char;
                                                          }
@@ -196,12 +196,15 @@
     'ا': 'ا', 'ى': 'ى', 'ئ': 'ئ', 'إ': 'إ', 'ؤ': 'ؤ', 'ة': 'ة', 'آ': 'آ', 
   };
 
+slug.allowed = slug.defaults.allowed = /[^\w\s\-._~\/]/g;
+
   slug.defaults.modes = {
     rfc3986: {
       replacement: '-',
       symbols: true,
       remove: null,
       lower: true,
+      allowed: slug.defaults.allowed,
       charmap: slug.defaults.charmap,
       multicharmap: slug.defaults.multicharmap,
     },
@@ -209,6 +212,7 @@
       replacement: '-',
       symbols: true,
       remove: /[.]/g,
+      allowed: slug.defaults.allowed,
       lower: false,
       charmap: slug.defaults.charmap,
       multicharmap: slug.defaults.multicharmap,
