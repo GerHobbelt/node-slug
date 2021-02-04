@@ -63,6 +63,13 @@
                                                            result += char;
                                                          }
     result = result.replace(/^\s+|\s+$/g, ''); // trim leading/trailing spaces
+
+    if (opts.limit) {
+        var split_array = result.split(' ');
+        split_array.splice(opts.limit, split_array.length - opts.limit);
+        result = split_array.join(' ');
+    }
+
     result = result.replace(/[-\s]+/g, opts.replacement); // convert spaces
     result = result.replace(opts.replacement+"$",''); // remove trailing separator
     if (opts.lower)
