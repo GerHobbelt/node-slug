@@ -554,7 +554,8 @@ describe('slug', () => {
       '¢': 'cent',
       '¥': 'yen',
       元: 'yuan',
-      円: 'yen',
+      円: 'yuan',
+      圆: 'yuan',
       '﷼': 'rial',
       '₠': 'ecu',
       '¤': 'currency',
@@ -565,6 +566,29 @@ describe('slug', () => {
       replacement = char_map[char];
       replacement = replacement.replace(' ', '-');
       assert.deepStrictEqual(slug(`foo ${char} bar baz`), `foo-${replacement}-bar-baz`, `testing char '${char}`);
+    }
+  });
+  it('should replace currencies (pinyin disabled)', () => {
+    let char;
+    let char_map;
+    let replacement;
+    char_map = {
+      '₨': 'rupee',
+      '₹': 'indian rupee',
+      '¢': 'cent',
+      '¥': 'yen',
+      元: 'yuan',
+      円: 'yen',   // yuan
+      圆: 'yuan',
+      '﷼': 'rial',
+      '¤': 'currency',
+      '฿': 'baht',
+      $: 'dollar'
+    };
+    for (char in char_map) {
+      replacement = char_map[char];
+      replacement = replacement.replace(' ', '-');
+      assert.deepStrictEqual(slug(`foo ${char} bar baz`, { pinyin: false }), `foo-${replacement}-bar-baz`, `testing char '${char}`);
     }
   });
   it('should replace symbols in rfc3986 mode', () => {
@@ -801,7 +825,7 @@ describe('slug', () => {
 
 
 
-xdescribe('slug in uslug mode', () => {
+describe('slug in uslug mode', () => {
 
   function uslug(str, opts) {
     return slug(str, Object.assign({}, { mode: 'uslug' }, opts));
@@ -813,7 +837,7 @@ xdescribe('slug in uslug mode', () => {
 
   let tests = [
     [ '', '' ],
-    [ 'The \u212B symbol invented by A. J. \u00C5ngstr\u00F6m (1814, L\u00F6gd\u00F6, \u2013 1874) denotes the length 10\u207B\u00B9\u2070 m.', 'the-å-symbol-invented-by-a-j-ångström-1814-lögdö-1874-denotes-the-length-10-10-m', { lower: true } ],
+    [ 'The \u212B symbol invented by A. J. \u00C5ngstr\u00F6m (1814, L\u00F6gd\u00F6, \u2013 1874) denotes the length 10\u207B\u00B9\u2070 m.', 'the-å-symbol-invented-by-a-j-ångström-1814-lögdö-1874-denotes-the-length-10-10-m', { normalize: 'NFKC', lower: true } ],
     [ 'The \u212B symbol invented by A. J. \u00C5ngstr\u00F6m (1814, L\u00F6gd\u00F6, \u2013 1874) denotes the length 10\u207B\u00B9\u2070 m.', 'The-Å-symbol-invented-by-A-J-Ångström-1814-Lögdö-1874-denotes-the-length-10-¹⁰-m', { normalize: 'NFC' } ],
     [ 'Быстрее и лучше!', 'быстрее-и-лучше', { lower: true } ],
     [ 'xx x  - "#$@ x', 'xx-x-dollar-x' ],
