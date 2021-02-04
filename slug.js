@@ -60,7 +60,7 @@
                 char = char.trim();
                                                              }
                                                            }
-        char = char.replace(/[^\w\s\-._~]/g, ''); // check for not-allowed characters
+        char = char.replace(/[^\w\s\-._~\/]/g, ''); // check for not-allowed characters
                                                            if (opts.remove) char = char.replace(opts.remove, ''); // add flavour
                                                            result += char;
                                                          }
