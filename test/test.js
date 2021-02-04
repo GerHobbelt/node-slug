@@ -873,7 +873,9 @@ describe('slug in uslug mode', () => {
     [ '🐶🐶🐶🐱', 'dog-dog-dog-cat' ],
     [ 'qbc,fe', 'qbc-fe' ],
     // Supplementary plane special purpose chars
-    [ '𝄠𝄡𝄢𝄣𝄤𝄥𝄦 𝆔𝆕𝆖', '' ]
+    [ '𝄠𝄡𝄢𝄣𝄤𝄥𝄦 𝆔𝆕𝆖', '' ],
+    // FE0F selector: https://github.com/jeremys/uslug/issues/6 / https://codepoints.net/U+FE0F?lang=en
+    [ 'Boom ❤️', 'boom', { unemojify: false, lower: true } ]
   ];
 
   for (let t in tests) {

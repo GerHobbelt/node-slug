@@ -278,7 +278,8 @@ slug.defaults.modes = {
     symbols: false,
     unemojify: true,
     normalize: 'NFC',
-    remove: null,
+    // FE0F selector: https://github.com/jeremys/uslug/issues/6 / https://codepoints.net/U+FE0F?lang=en
+    remove: /[\ufe0f]+/ug,
     allowed: /[^\p{L}\p{M}\p{N}_~\-]/gu,
     lower: false,
     pinyin: false,
