@@ -1,28 +1,33 @@
-# [slug](https://github.com/RightHere360/node-slug) [![Build Status](https://travis-ci.org/RightHere360/node-slug.svg?branch=master)](https://travis-ci.org/RightHere360/node-slug)
+# [slug](https://github.com/RightHere360/node-slug) 
+
+[![Build Status](https://travis-ci.org/RightHere360/node-slug.svg?branch=master)](https://travis-ci.org/RightHere360/node-slug)
 
 slugifies every string, even when it contains unicode!
 
-Make strings url-safe.
+Make strings url-safe. 
+
+Provides additional cleanup modes for different purposes. Can also be used to produce file-system safe file paths / file name slugs.
 
 * respecting [RFC 3986](https://tools.ietf.org/html/rfc3986)
 * Comprehensive tests
-* No dependencies (except the unicode table)
-* Not in coffee-script (except the tests lol)
+* Minimal dependencies (except the unicode table)
+* Not in coffee-script
 * Coerces foreign symbols to their english equivalent
-* Works in browser (window.slug) and AMD/CommonJS-flavoured module loaders (except the unicode symbols unless you use browserify but who wants to download a ~2mb js file, right?)
+* Works in browser and node
+* Processes a string on a per-**Unicode codepoint** basis (this allows proper processing of Supplemental Plane Unicode characters in your input)
+* Accepts user-defined custom `transform(char)` function for those extra-special character mappings
+* Includes a [`uslug` mode](https://www.npmjs.com/package/uslug) -- this is where Unicode letters and digits are kept as is in slug.
+ 
+
 
 ```
-npm install slug
+npm install @gerhobbelt/slug
 ```
 
-```
-bower install slug
-```
-
-## example
+## Example
 
 ```javascript
-var slug = require('slug');
+var slug = require('@gerhobbelt/slug');
 var print = console.log.bind(console, '>');
 
 print(slug('i ♥ unicode'));
@@ -45,58 +50,64 @@ print(slug('i <3 unicode'));
 // > i-love-unicode
 ```
 
-## options
+## Options
 
 ```javascript
-// options is either object or replacement (sets options.replacement)
+// options is either object or replacement string (sets options.replacement)
 slug('string', [{ options } || 'replacement']);
 ```
 
 ```javascript
 slug.defaults.mode = 'pretty';
-slug.defaults.modes['rfc3986'] = {
-  replacement: '-', // replace spaces with replacement
-  symbols: true, // replace unicode symbols or not
-  remove: null, // (optional) regex to remove characters
-  lower: true, // result in lower case
-  allowed: slug.allowed, // (optional) regex allowed characters
-  charmap: slug.charmap, // replace special characters
-  multicharmap: slug.multicharmap, // replace multi-characters
-};
-slug.defaults.modes['pretty'] = {
-  replacement: '-',
-  symbols: true,
-  remove: /[.]/g,
-  lower: false,
-  allowed: slug.allowed,
-  charmap: slug.charmap,
-  multicharmap: slug.multicharmap,
+slug.defaults.modes = {
+  rfc3986: {
+    replacement: '-',        // replace spaces with replacement string
+    symbols: true,           // replace unicode symbols with descriptor text or not
+    unemojify: true,         // convert emojis back to github-style identifiers, e.g. ':smile:'
+    normalize: 'NFC',        // Unicode normalization to be applied. Can be `false`, 'NFC', 'NFKC', 'NFD', 'NFKD'
+    remove: /['"]/g,         // (optional) regex to remove characters (`null` or RegExp)
+    lower: true,             // result in lower case
+    pinyin: true,            // apply pinyin transformation to input before mapping/filtering the slug
+    transform: null,         // (optional) custom user-defined `function transform(char) -> char` mapping
+    allowed: slug.defaults.allowed,             // (optional) regex matching **NOT** allowed characters (null, RegExp)
+    charmap: slug.defaults.charmap,             // (optional) replace special characters (null, object map)
+    multicharmap: slug.defaults.multicharmap    // (optional) replace multi-characters (null, object map)
+  },
+  pretty: {
+    replacement: '-',
+    symbols: true,
+    unemojify: true,
+    normalize: 'NFC',
+    remove: /[.'"]/g,
+    allowed: slug.defaults.allowed,
+    lower: false,
+    pinyin: true,
+    transform: null,
+    charmap: slug.defaults.charmap,
+    multicharmap: slug.defaults.multicharmap
+  },
+  uslug: {
+    replacement: '-',
+    symbols: false,
+    unemojify: true,
+    normalize: 'NFC',
+    remove: null,
+    allowed: /[^\p{L}\p{M}\p{N}_~\-]/gu,
+    lower: false,
+    pinyin: false,
+    transform: uslug_mode_transform,
+    charmap: miscSymbolsCharmap,
+    multicharmap: slug.defaults.multicharmap
+  }
 };
 ```
 
-## browser
-
-When using browserify you might want to remove the symbols table from your bundle by using `--ignore` similar to this:
-
-```bash
-# generates a standalone slug browser bundle:
-browserify slug.js --ignore unicode/category/So -s slug > slug-browser.js
-```
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/dodo/node-slug/trend.png)](https://bitdeli.com/free 'Bitdeli Badge')
 
 
 
+## [`uslug` mode](https://www.npmjs.com/package/uslug)
 
-
-
-
-
-
-
-
-
-# Uslug.js
+Derived from code from the [uslug](https://github.com/jeremys/uslug) project.
 
 Inspired by [unicode-slugify](https://github.com/mozilla/unicode-slugify), uslug is a permissive slug generator that works with unicode.
 We keep only characters from the categories Letter, Number and Separator (see [Unicode Categories](http://www.unicode.org/versions/Unicode6.0.0/ch04.pdf))
@@ -108,19 +119,16 @@ on translating unicode characters to english or latin equivalent.
 
 As of now, uslug does not support characters outside of the [Basic Multilingual Plane](https://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane).
 
+
+
 ## Quick Examples
 
     uslug('Быстрее и лучше!') // 'быстрее-и-лучше'
     uslug('汉语/漢語') // '汉语漢語'
 
     uslug('Y U NO', { lower: false }) // 'Y-U-NO'
-    uslug('Y U NO', { spaces: true }) // 'y u no'
-    uslug('Y-U|NO', { allowedChars: '|' }) // 'yu|no'
-
-
-## Installation
-
-    npm install uslug
+    uslug('Y U NO', { replacement: ' ' }) // 'y u no'
+    uslug('Y-U|NO', { allowed: /[^\p{L}\p{M}\p{N}_|~\-]/gu }) // 'yu|no'
 
 
 ## Options
@@ -133,9 +141,11 @@ __Arguments__
 
 * string - The string you want to slugify.
 * options - An optional object that can contain:  
-    * allowedChars: a String of chars that you want to be whitelisted. Default: '-_~'.  
+    * allowed: regex identifying the characters which will **NOT be accepted**: these will be replaced by a single space.  
     * lower: a Boolean to force to lower case the slug. Default: true.  
-    * spaces: a Boolean to allow spaces. Default: false.  
+    * replacement: a string which will replace each space in the slug. Default: '-'.  
+
+
 
 ## Contributing
 
@@ -161,6 +171,8 @@ grep -E '<char cp="[0-9A-F]{4}"' ucd.all.flat.xml.pretty | grep -E 'gc="L[ultmo]
 In this case, the `grep -E 'gc="L[ultmo]"'` command will only extract characters that are in the
 general categories of: Lu, Ll, Lt, Lm and Lo (which belong to the letters category).
 `scripts/convert-to-regexp` is a custom script that will need execution permissions to run.
+
+
 
 ## License
 
