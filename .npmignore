@@ -1,2 +1,6 @@
-Cakefile
-src/
+/.github
+support/
+.nyc_output
+coverage/
+Makefile
+.*

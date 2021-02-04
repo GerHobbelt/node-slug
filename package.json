@@ -1,17 +1,7 @@
 {
-  "name": "slug",
-  "description": "slugifies even utf-8 chars!",
+  "name": "@gerhobbelt/slug",
   "version": "0.9.2",
-  "homepage": "https://github.com/dodo/node-slug",
-  "author": "dodo (https://github.com/dodo)",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/dodo/node-slug.git"
-  },
-  "main": "slug.js",
-  "engines": {
-    "node": ">= 0.4.x"
-  },
+  "description": "slugifies even utf-8 chars!",
   "keywords": [
     "slugify",
     "slug",
@@ -21,26 +11,51 @@
     "unicode",
     "url"
   ],
+  "homepage": "https://github.com/dodo/node-slug",
+  "author": "dodo (https://github.com/dodo)",
+  "repository": "dodo/node-slug",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "slug": "bin/slug.js"
+  },
+  "source": "slug.js",
+  "main": "slug.js",
+  "engines": {
+    "node": ">=12.20.0"
+  },
   "scripts": {
-    "test": "./node_modules/.bin/mocha ./test/*.test.* --require should --reporter spec --colors --compilers coffee:coffee-script/register",
-    "lint": "eslint ./slug.js"
+    "build": "make",
+    "test": "make test",
+    "todo": "make todo",
+    "clean": "make clean",
+    "superclean": "make superclean",
+    "doc": "make doc",
+    "lint": "make lint",
+    "lintfix": "make lintfix",
+    "cov": "make report-coverage",
+    "pub": "npm publish --access public"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
     "pinyin": "2.9.1",
     "unicode": ">=13.0.0"
   },
   "devDependencies": {
+    "@gerhobbelt/prepend-header": "1.1.0-7",
+    "argparse": "2.0.1",
+    "cross-env": "7.0.3",
     "eslint": "7.19.0",
-    "eslint-config-airbnb-base": "14.2.1",
-    "eslint-config-prettier": "7.2.0",
-    "eslint-plugin-import": "2.22.1",
-    "eslint-plugin-prettier": "3.3.1",
+    "microbundle": "0.13.0",
     "mocha": "8.2.1",
-    "prettier": "2.2.1",
-    "should": "13.2.3"
+    "nyc": "15.1.0"
   },
-  "bin": {
-    "slug": "bin/slug.js"
-  },
-  "license": "MIT"
+  "reporter": [
+    "lcov",
+    "text",
+    "html",
+    "text-summary"
+  ]
 }

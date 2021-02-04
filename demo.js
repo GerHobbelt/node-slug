@@ -1,1 +1,3 @@
-console.log(require('./slug')('😹'));
+import slug from './slug.js';
+
+console.log(slug('😹'));
