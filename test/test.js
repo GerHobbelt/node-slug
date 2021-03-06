@@ -783,6 +783,40 @@ describe('slug', () => {
       })
       , expected);
   });
+  it('should survive incorrect options and tweak the default instead', () => {
+    let expected;
+    let text;
+    text = "It's your journey ... we guide you through.";
+    expected = 'Its your journey we guide you through';
+    assert.deepStrictEqual(
+      slug(text, {
+        mode: 'filesystem',
+        replacement: ' '
+      })
+      , expected);
+  });
+  it('should work correctly with regex special chars as replacement characters', () => {
+    let expected;
+    let text;
+    text = "It's your journey ... we guide you through.";
+    expected = 'Its.your.journey.we.guide.you.through';
+    assert.deepStrictEqual(
+      slug(text, {
+        replacement: '.'
+      })
+      , expected);
+  });
+  it('should work correctly with multichar replacement strings', () => {
+    let expected;
+    let text;
+    text = "It's your journey ... we guide you through.";
+    expected = 'Its.*.your.*.journey.*.we.*.guide.*.you.*.through';
+    assert.deepStrictEqual(
+      slug(text, {
+        replacement: '.*.'
+      })
+      , expected);
+  });
   it('should allow disabling of lowercase', () => {
     let expected;
     let text;

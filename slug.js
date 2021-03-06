@@ -118,7 +118,7 @@ function slug(content, opts) {
   }
 
   result = result.replace(/[-\s]+/g, opts.replacement); // convert spaces
-  result = result.replace(new RegExp(`(?:${opts.replacement})+$`), ''); // remove trailing separator(s)
+  result = result.replace(new RegExp(`(?:${opts.replacement.replace(/[\[\]{}().*+?]/g, '\\$1')})+$`), ''); // remove trailing separator(s)
   if (opts.lower) {
     result = result.toLowerCase();
   }
