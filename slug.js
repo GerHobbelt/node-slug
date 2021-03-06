@@ -999,6 +999,19 @@ slug.defaults.modes = {
     charmap: slug.defaults.charmap,
     multicharmap: slug.defaults.multicharmap
   },
+  filename: {
+    replacement: ' ',
+    symbols: true,
+    unemojify: true,
+    normalize: 'NFC',
+    remove: /['"]/g,
+    allowed: /[^\p{L}\p{N}_~()\[\].-]/gu,
+    lower: false,
+    pinyin: false,
+    transform: null,
+    charmap: slug.defaults.charmap,
+    multicharmap: slug.defaults.multicharmap
+  },
   uslug: {
     replacement: '-',
     symbols: false,

@@ -783,7 +783,7 @@ describe('slug', () => {
     expected = 'Its-your-journey-we-guide-you-through';
     assert.deepStrictEqual(
       slug(text, {
-        mode: 'filesystem'
+        mode: 'filesystemXXX'
       })
       , expected);
   });
@@ -794,7 +794,7 @@ describe('slug', () => {
     expected = 'Its your journey we guide you through';
     assert.deepStrictEqual(
       slug(text, {
-        mode: 'filesystem',
+        mode: 'filesystemXXX',
         replacement: ' '
       })
       , expected);
@@ -948,4 +948,76 @@ describe('slug in uslug mode', () => {
     });
   }
 });
+
+
+
+
+describe('slug in filename mode', () => {
+
+  function uslug(str, opts) {
+    return slug(str, Object.assign({}, { mode: 'filename' }, opts));
+  }
+
+  let word0 = 'Ελληνικά';
+  let word1 = [ word0, word0 ].join('-');
+  let word2 = [ word0, word0 ].join(' - ');
+
+  let tests = [
+    [ '', '' ],
+    [ 'Gooi de trossen maar los, ouwe! :: Wij gaan zeilen...', 'Gooi de trossen maar los ouwe Wij gaan zeilen...' ],
+    [ 'Over / De / Boeg / Gegooid/waarom ook/niet, eigenlijk/?/punt.pdf', 'Over De Boeg Gegooid waarom ook niet eigenlijk punt.pdf' ],
+    [ 'The \u212B symbol invented by A. J. \u00C5ngstr\u00F6m (1814, L\u00F6gd\u00F6, \u2013 1874) denotes the length 10\u207B\u00B9\u2070 m.', 'the a symbol invented by a. j. angstrom (1814 logdo 1874) denotes the length 10 10 m.', { normalize: 'NFKC', lower: true } ],
+    [ 'The \u212B symbol invented by A. J. \u00C5ngstr\u00F6m (1814, L\u00F6gd\u00F6, \u2013 1874) denotes the length 10\u207B\u00B9\u2070 m.', 'The A symbol invented by A. J. Angstrom (1814 Logdo 1874) denotes the length 10 ¹⁰ m.', { normalize: 'NFC' } ],
+    [ 'Быстрее и лучше!', 'быстрее и лучше', { lower: true, charmap: null } ],
+    [ 'Быстрее и лучше!', 'bystree i luchshe', { lower: true } ],
+    [ 'xx x  - "#$@ x', 'xx x dollar x' ],
+    [ 'Bän...g (bang)', 'ban...g (bang)', { lower: true } ],
+    [ 'Bän...g (bang)', 'Ban...g (bang)' ],
+    [ 'Bän…g (bang)!', 'Ban...g (bang)' ],
+    [ word0, 'ellinika', { lower: true } ],
+    [ word1, 'ellinika ellinika', { lower: true } ],
+    [ word2, 'ellinika ellinika', { lower: true } ],
+    [ '    a ', 'a' ],
+    [ 'tags/', 'tags' ],
+    [ 'y_u_no', 'y_u_no' ],
+    [ 'el-ni\xf1o', 'el nino' ],
+    [ 'x荿', 'x荿' ],
+    [ 'ϧ΃蒬蓣', 'ϧ 蒬蓣', { normalize: 'NFC' } ],
+    [ '¿x', 'x' ],
+    [ '汉语/漢語', '汉语 漢語' ],
+    [ 'فار,سي', 'far sy' ],
+    [ 'เแโ|ใไ', 'เแโ ใไ', { charmap: null } ],
+    [ 'เแโ|ใไ', 'เแโ or ใไ' ],
+    [ '日本語ドキュメンテ(ーション)', '日本語ドキュメンテ(ーション)' ],
+    [ '一二三四五六七八九十！。。。', '一二三四五六七八九十' ],
+    [ 'संसद में काम नहीं तो वेतन क्यों?', 'Sa SaTha Ma Ka Ma NaHa Ta Va TaNa Ka Ya' ],
+    [ 'संसद में काम नहीं तो वेतन क्यों?', 'स सद म क म नह त व तन क य', { charmap: null } ],
+    [ 'เร่งรัด \'ปรับเงินเดือนท้องถิ่น 1 ขั้น\' ตามมติ ครม.',  'เร งร ด ปร บเง นเด อนท องถ น 1 ข น ตามมต ครม.' ],
+    [ 'オバマ大統領が病院爆撃の調査へ同意するように、協力してください！',  'オバマ大統領が病院爆撃の調査へ同意するように 協力してください' ],
+    [ '일본정부 법무대신(法務大臣): 우리는 일본 입관법의 재검토를 요구한다!',  '일본정부 법무대신(法務大臣) 우리는 일본 입관법의 재검토를 요구한다' ],
+    // Keeps character in supplementary plane (char code 77824).
+    [ '\uD80C\uDC00', '\uD80C\uDC00' ],
+    // Removes non-letter/digit/emo character in supplementary plane (char code 77824).
+    [ '\uD80C\uDC00', '\uD80C\uDC00' ],
+    [ '😁', 'grinning face with smiling eyes' ],
+    [ '😁a', 'grinning face with smiling eyesa' ],
+    [ '🐶🐶🐶🐱',  'dog facedog facedog facecat face' ],
+    [ 'qbc,fe', 'qbc fe' ],
+    // Supplementary plane special purpose chars
+    [ '𝄠𝄡𝄢𝄣𝄤𝄥𝄦 𝆔𝆕𝆖', 'musical g clef ottava bassamusical c clefmusical f clefmusical f clef ottava altamusical f clef ottava bassamusical drum clef 1musical drum clef 2 musical grace note slashmusical grace note no slashmusical tr' ],
+    // FE0F selector: https://github.com/jeremys/uslug/issues/6 / https://codepoints.net/U+FE0F?lang=en
+    [ 'Boom ❤️', 'boom heavy heart', { unemojify: false, lower: true } ],
+    [ 'Boom ❤️', 'Boom heavy heart' ]
+  ];
+
+  for (let t in tests) {
+    let test = tests[t];
+    it(`should pass '${test[0]}' as '${test[1]}' (test #${t + 1})`, () => {
+      assert.deepStrictEqual(
+        uslug(test[0], test[2]), test[1]
+      );
+    });
+  }
+});
+
 
