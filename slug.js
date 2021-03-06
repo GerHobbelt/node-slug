@@ -25,7 +25,7 @@ function slug(content, opts) {
     opts = { replacement: opts };
   }
   opts = Object.assign({}, opts);
-  let defaults = slug.defaults.modes[opts.mode || slug.defaults.mode];
+  let defaults = slug.defaults.modes[opts.mode] || slug.defaults.modes[slug.defaults.mode];
   opts = Object.assign({}, defaults, opts);
   if (typeof opts.symbols === 'undefined') {
     opts.symbols = defaults.symbols;

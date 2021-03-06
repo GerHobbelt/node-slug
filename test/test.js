@@ -772,6 +772,17 @@ describe('slug', () => {
       })
       , expected);
   });
+  it('should survive incorrect options', () => {
+    let expected;
+    let text;
+    text = "It's your journey ... we guide you through.";
+    expected = 'Its-your-journey-we-guide-you-through';
+    assert.deepStrictEqual(
+      slug(text, {
+        mode: 'filesystem'
+      })
+      , expected);
+  });
   it('should allow disabling of lowercase', () => {
     let expected;
     let text;
